@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Vacaciones - Técnicos</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SDK de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-app: #f0f4f8; --bg-card: #ffffff; --text-main: #1e293b; --text-muted: #64748b;
+            --border: #e2e8f0; --radius-lg: 16px; --radius-md: 8px;
+            --shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --success: #10b981; --warning: #f59e0b; --whatsapp: #25d366; --pdf-color: #ef4444;
+        }
+        [data-theme="dark"] {
+            --bg-app: #0f172a; --bg-card: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8; --border: #334155;
+            --shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; transition: background-color 0.3s, border-color 0.3s, color 0.3s; }
+        body { background-color: var(--bg-app); color: var(--text-main); padding: 24px; min-height: 100vh; }
+        .main-container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+        header { background: var(--bg-card); padding: 20px 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); flex-wrap: wrap; gap: 15px; }
+        header h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        .header-actions { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .btn { padding: 10px 16px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; border: none; transition: var(--transition); font-size: 0.9rem; display: flex; align-items: center; gap: 8px; text-decoration: none;}
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-secondary { background: var(--bg-app); border: 1px solid var(--border); color: var(--text-main); }
+        .btn-secondary:hover { background: var(--border); }
+        .btn-danger { background: #fee2e2; color: #b91c1c; }
+        [data-theme="dark"] .btn-danger { background: #7f1d1d; color: #fecaca; }
+        .btn-whatsapp { background-color: var(--whatsapp); color: white; }
+        .btn-whatsapp:hover { background-color: #20ba5a; }
+        .btn-pdf { background-color: var(--pdf-color); color: white; }
+        .btn-pdf:hover { background-color: #dc2626; }
+        .btn-info-icon { width: 22px; height: 22px; border-radius: 50%; background: var(--border); color: var(--text-muted); font-size: 0.75rem; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+        .btn-info-icon:hover { background: #3b82f6; color: white; }
+
+        .grid-vacaciones { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 900px) { .grid-vacaciones { grid-template-columns: 1fr; } }
+        .card { background: var(--bg-card); border-radius: var(--radius-lg); padding: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; }
+        .card h3 { font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between; }
+
+        .absences-sidebar-list { display: flex; flex-direction: column; gap: 10px; max-height: 450px; overflow-y: auto; padding-right: 4px; }
+        .absence-sidebar-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-app); border-radius: var(--radius-md); border: 1px solid var(--border); font-size: 0.85rem; gap: 8px; }
+        .absence-sidebar-item.is-past { opacity: 0.65; background: var(--bg-card); }
+        .badge-absence { font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+        .badge-vacation { background: #10b981; color: white; }
+        .badge-personal { background: #f59e0b; color: white; }
+        .badge-status-past { background: #94a3b8; color: white; }
+        .badge-status-upcoming { background: #3b82f6; color: white; }
+
+        .vacation-balance-list { display: flex; flex-direction: column; gap: 12px; max-height: 450px; overflow-y: auto; }
+        .vacation-balance-item { background: var(--bg-app); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; }
+        .vacation-balance-row { display: flex; justify-content: space-between; align-items: center; }
+        .vacation-inputs-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border); }
+        .vacation-inputs-row input { width: 50px; padding: 4px; text-align: center; border: 1px solid var(--border); background: var(--bg-app); color: var(--text-main); border-radius: 4px; font-weight: 600; }
+        .tech-color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+        #toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 12px 20px; border-radius: var(--radius-md); box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-weight: 600; font-size: 0.9rem; z-index: 2000; transform: translateY(100px); opacity: 0; transition: all 0.3s; }
+        #toast.show { transform: translateY(0); opacity: 1; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal { background: var(--bg-card); padding: 30px; border-radius: var(--radius-lg); width: 420px; max-width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 20px; border: 1px solid var(--border); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { display: flex; flex-direction: column; gap: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.9rem; font-weight: 600; }
+        .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); background: var(--bg-app); color: var(--text-main); border-radius: var(--radius-md); font-size: 0.9rem; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+
+        @media print {
+            body { background: white !important; color: black !important; padding: 10px; }
+            header, .card, .btn, #toast, .modal-overlay { display: none !important; }
+            .print-only-container { display: block !important; width: 100%; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            .print-table th, .print-table td { border: 1px solid #000; padding: 10px; text-align: left; font-size: 14px; }
+            .print-table th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
+        }
+        .print-only-container { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <header>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <a href="index.html" class="btn btn-secondary" title="Volver al Portal"><i class="fa-solid fa-arrow-left"></i></a>
+                <h1>🌴 Vacaciones y Asuntos Propios</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="toggleTheme()" id="theme-btn">🌙</button>
+                <button class="btn btn-whatsapp" onclick="enviarWhatsAppVacaciones()" title="Enviar resumen por WhatsApp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+                <button class="btn btn-pdf" onclick="exportarPDFVacaciones()" title="Imprimir para Pizarra / PDF"><i class="fa-solid fa-print"></i> PDF</button>
+            </div>
+        </header>
+
+        <div class="grid-vacaciones">
+            <!-- Ausencias Registradas -->
+            <div class="card">
+                <h3>
+                    <span>📋 Listado de Ausencias</span>
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="openAddAbsenceModal()">+ Registrar</button>
+                </h3>
+                <div class="absences-sidebar-list" id="absences-sidebar-list"></div>
+            </div>
+
+            <!-- Control de Saldos -->
+            <div class="card">
+                <h3>
+                    <span>🏖️ Control de Saldos (Base: 31)</span>
+                    <button class="btn-info-icon" onclick="openBalanceInfoModal()">i</button>
+                </h3>
+                <div class="vacation-balance-list" id="vacation-balance-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor Impresión -->
+    <div class="print-only-container" id="print-container">
+        <h2 style="text-align: center; margin-bottom: 5px;">CONTROL DE VACACIONES - TÉCNICOS</h2>
+        <p style="text-align: center; margin-bottom: 20px; font-size: 12px; color: #555;">Listado oficial para tablón de anuncios</p>
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th>Nombre del Técnico</th>
+                    <th>Fechas Disfrutadas</th>
+                    <th>Total Disfrutados</th>
+                    <th>Días Restantes</th>
+                </tr>
+            </thead>
+            <tbody id="print-table-body"></tbody>
+        </table>
+    </div>
+
+    <div id="toast">¡Actualizado!</div>
+
+    <!-- Modal Ausencia -->
+    <div class="modal-overlay" id="absence-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Registrar Vacaciones / Asuntos Propios</h3>
+                <button class="btn btn-secondary" onclick="closeAbsenceModal()" style="padding: 4px 8px;">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Técnico</label>
+                    <select id="absence-tech-select"></select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Ausencia</label>
+                    <select id="absence-type-select">
+                        <option value="vacation">🌴 Vacaciones</option>
+                        <option value="personal">☕ Asuntos Propios</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha Inicio</label>
+                    <input type="date" id="absence-start-input">
+                </div>
+                <div class="form-group">
+                    <label>Fecha Fin</label>
+                    <input type="date" id="absence-end-input">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAbsenceModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveAbsence()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ayuda Saldos -->
+    <div class="modal-overlay" id="balance-info-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>ℹ️ Guía del Control de Saldos</h3>
+                <button class="btn btn-secondary" onclick="closeBalanceInfoModal()" style="padding: 4px 8px;">✕</button>
+            </div>
+            <div class="modal-body" style="font-size: 0.9rem; line-height: 1.5; color: var(--text-muted);">
+                <p>Cálculo: <b style="color:var(--text-main);">Días Libres = Base (31) - Auto - Extra + Ajuste</b></p>
+                <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 6px;">
+                    <li><strong>Base (31):</strong> Días anuales por convenio.</li>
+                    <li><strong>Auto:</strong> Días restados al registrar periodos.</li>
+                    <li><strong>Extra:</strong> Días adicionales disfrutados fuera de calendario.</li>
+                    <li><strong>Ajuste:</strong> Corrección manual (+/-).</li>
+                </ul>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="closeBalanceInfoModal()">Entendido</button></div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://nefnltsxblfpfrifdsgy.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_ICUgIbsQd736F6tkK1FxCw_DiyJiIFk';
+        let dbSupabase = null;
+        try { dbSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) {}
+
+        let tecnicos = [
+            { id: 1, name: "J.Carlos", color: "#facc15" },
+            { id: 2, name: "Óscar Ibarreta", color: "#ef4444" },
+            { id: 3, name: "Lucas", color: "#d946ef" },
+            { id: 4, name: "Óscar Ibañez", color: "#3b82f6" }
+        ];
+        let ausencias = [];
+        let vacacionesData = {};
+
+        function showToast(msg) {
+            const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+        function toggleTheme() {
+            const h = document.documentElement, b = document.getElementById('theme-btn');
+            if (h.getAttribute('data-theme') === 'light') { h.setAttribute('data-theme', 'dark'); b.innerText = '☀️'; }
+            else { h.setAttribute('data-theme', 'light'); b.innerText = '🌙'; }
+        }
+
+        async function init() {
+            if (dbSupabase) {
+                let { data: absData } = await dbSupabase.from('ausencias').select('*');
+                if (absData) ausencias = absData.map(a => ({ id: a.id, techName: a.tech_name, type: a.type, start: a.start_date, end: a.end_date }));
+
+                let { data: vacData } = await dbSupabase.from('vacaciones_saldos').select('*');
+                if (vacData) {
+                    vacacionesData = {};
+                    vacData.forEach(v => vacacionesData[v.tech_name] = { extraDisfrutados: v.extra_disfrutados || 0, ajusteManual: v.ajuste_manual || 0 });
+                }
+            }
+            render();
+        }
+
+        function render() {
+            renderAbsences();
+            renderBalances();
+        }
+
+        function renderAbsences() {
+            const container = document.getElementById('absences-sidebar-list');
+            container.innerHTML = '';
+            if (ausencias.length === 0) {
+                container.innerHTML = '<div style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:15px;">No hay ausencias registradas.</div>';
+                return;
+            }
+            let sorted = [...ausencias].sort((a, b) => new Date(a.start) - new Date(b.start));
+            let todayStr = new Date().toISOString().split('T')[0];
+
+            sorted.forEach(abs => {
+                const label = abs.type === 'vacation' ? '🌴 Vacaciones' : '☕ Asuntos Propios';
+                const badge = abs.type === 'vacation' ? 'badge-vacation' : 'badge-personal';
+                let isPast = abs.end < todayStr;
+
+                container.innerHTML += `
+                    <div class="absence-sidebar-item ${isPast ? 'is-past' : ''}">
+                        <div style="display:flex; flex-direction:column; gap:3px;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <strong>${abs.techName}</strong>
+                                <span class="badge-absence ${badge}">${label}</span>
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Del ${abs.start} al ${abs.end}</div>
+                            <div><span class="badge-absence ${isPast ? 'badge-status-past' : 'badge-status-upcoming'}" style="font-size:0.6rem;">${isPast ? 'Disfrutada' : 'Próxima'}</span></div>
+                        </div>
+                        <button class="btn btn-danger" style="padding: 6px 10px; font-size:0.8rem;" onclick="deleteAbsence(${abs.id})">✕</button>
+                    </div>
+                `;
+            });
+        }
+
+        function calcularResumenArray() {
+            let res = [];
+            tecnicos.forEach(t => {
+                if (!vacacionesData[t.name]) vacacionesData[t.name] = { extraDisfrutados: 0, ajusteManual: 0 };
+                let diasCal = 0, periodos = [];
+                ausencias.forEach(abs => {
+                    if (abs.techName === t.name && abs.type === 'vacation') {
+                        let diff = Math.ceil(Math.abs(new Date(abs.end) - new Date(abs.start)) / (1000 * 60 * 60 * 24)) + 1;
+                        diasCal += diff;
+                        periodos.push(`${abs.start.split('-').reverse().join('/')} al ${abs.end.split('-').reverse().join('/')}`);
+                    }
+                });
+                let d = vacacionesData[t.name];
+                let disfrutados = diasCal + Number(d.extraDisfrutados);
+                let restantes = 31 - disfrutados + Number(d.ajusteManual);
+                res.push({ name: t.name, periodos: periodos.length ? periodos.join(', ') : 'Sin definir', disfrutados, restantes });
+            });
+            return res;
+        }
+
+        function renderBalances() {
+            const container = document.getElementById('vacation-balance-list');
+            container.innerHTML = '';
+            tecnicos.forEach(t => {
+                if (!vacacionesData[t.name]) vacacionesData[t.name] = { extraDisfrutados: 0, ajusteManual: 0 };
+                let diasCal = 0;
+                ausencias.forEach(abs => {
+                    if (abs.techName === t.name && abs.type === 'vacation') {
+                        diasCal += Math.ceil(Math.abs(new Date(abs.end) - new Date(abs.start)) / (1000 * 60 * 60 * 24)) + 1;
+                    }
+                });
+                let d = vacacionesData[t.name];
+                let disfrutados = diasCal + Number(d.extraDisfrutados);
+                let restantes = 31 - disfrutados + Number(d.ajusteManual);
+
+                container.innerHTML += `
+                    <div class="vacation-balance-item">
+                        <div class="vacation-balance-row">
+                            <div style="display: flex; align-items: center; gap: 8px; font-weight: 700;">
+                                <span class="tech-color-dot" style="background: ${t.color}"></span>
+                                <span>${t.name}</span>
+                            </div>
+                            <span style="font-weight: 800; font-size: 1rem; color: ${restantes < 0 ? '#ef4444' : '#10b981'};">${restantes} días libres</span>
+                        </div>
+                        <div class="vacation-inputs-row">
+                            <span>Base: <b>31</b></span>
+                            <span>Auto: <b>${diasCal}</b></span>
+                            <span>Extra: <input type="number" value="${d.extraDisfrutados}" onchange="actualizarSaldos('${t.name}', this.value, null)"></span>
+                            <span>Ajuste: <input type="number" value="${d.ajusteManual}" onchange="actualizarSaldos('${t.name}', null, this.value)"></span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function actualizarSaldos(techName, extra, ajuste) {
+            if (!vacacionesData[techName]) vacacionesData[techName] = { extraDisfrutados: 0, ajusteManual: 0 };
+            if (extra !== null) vacacionesData[techName].extraDisfrutados = parseInt(extra) || 0;
+            if (ajuste !== null) vacacionesData[techName].ajusteManual = parseInt(ajuste) || 0;
+
+            if (dbSupabase) {
+                await dbSupabase.from('vacaciones_saldos').upsert({
+                    tech_name: techName,
+                    extra_disfrutados: vacacionesData[techName].extraDisfrutados,
+                    ajuste_manual: vacacionesData[techName].ajusteManual
+                }, { onConflict: ['tech_name'] });
+            }
+            renderBalances(); showToast("☁️ Saldo actualizado");
+        }
+
+        function enviarWhatsAppVacaciones() {
+            let res = calcularResumenArray();
+            let msg = "🌴 *RESUMEN DE VACACIONES - TÉCNICOS* 🌴\n\n";
+            res.forEach(i => {
+                msg += `👤 *${i.name}*\n📅 Fechas: ${i.periodos}\n🏖️ Disfrutados: ${i.disfrutados} días\n⏳ Restantes: ${i.restantes} días\n-----------------------------------\n`;
+            });
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function exportarPDFVacaciones() {
+            let res = calcularResumenArray();
+            let tbody = document.getElementById('print-table-body');
+            tbody.innerHTML = '';
+            res.forEach(i => {
+                tbody.innerHTML += `<tr><td><strong>${i.name}</strong></td><td>${i.periodos}</td><td><strong>${i.disfrutados} días</strong></td><td><strong>${i.restantes} días</strong></td></tr>`;
+            });
+            window.print();
+        }
+
+        function openAddAbsenceModal() {
+            document.getElementById('absence-tech-select').innerHTML = tecnicos.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+            document.getElementById('absence-start-input').value = new Date().toISOString().split('T')[0];
+            document.getElementById('absence-end-input').value = new Date().toISOString().split('T')[0];
+            document.getElementById('absence-modal-overlay').style.display = 'flex';
+        }
+        function closeAbsenceModal() { document.getElementById('absence-modal-overlay').style.display = 'none'; }
+
+        async function saveAbsence() {
+            let techName = document.getElementById('absence-tech-select').value;
+            let type = document.getElementById('absence-type-select').value;
+            let start = document.getElementById('absence-start-input').value;
+            let end = document.getElementById('absence-end-input').value;
+
+            if (!start || !end || start > end) { alert("Comprueba las fechas."); return; }
+
+            let row = { tech_name: techName, type, start_date: start, end_date: end };
+            if (dbSupabase) {
+                let { data } = await dbSupabase.from('ausencias').insert([row]).select();
+                if (data && data.length) ausencias.push({ id: data[0].id, techName, type, start, end });
+            } else {
+                ausencias.push({ id: Date.now(), techName, type, start, end });
+            }
+            closeAbsenceModal(); render(); showToast("☁️ Ausencia guardada");
+        }
+
+        async function deleteAbsence(id) {
+            ausencias = ausencias.filter(a => a.id !== id);
+            if (dbSupabase) await dbSupabase.from('ausencias').delete().eq('id', id);
+            render(); showToast("🗑️ Ausencia eliminada");
+        }
+
+        function openBalanceInfoModal() { document.getElementById('balance-info-modal-overlay').style.display = 'flex'; }
+        function closeBalanceInfoModal() { document.getElementById('balance-info-modal-overlay').style.display = 'none'; }
+
+        init();
+    </script>
+</body>
+</html>
