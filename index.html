@@ -11,13 +11,13 @@
     <!-- SDK de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Temas HUD / Sci-Fi */
+        /* Temas HUD / Sci-Fi con transición suave */
         :root {
             --bg-app: #020617; --bg-card: rgba(15, 23, 42, 0.85); --text-main: #f8fafc; --text-muted: #94a3b8;
             --border: rgba(51, 65, 85, 0.8); --accent: #3b82f6; --accent-glow: rgba(59, 130, 246, 0.4);
             --radius-lg: 20px; --radius-md: 12px;
             --shadow: 0 20px 25px -5px rgba(0,0,0,0.6), 0 8px 10px -6px rgba(0,0,0,0.6);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease;
             --success: #10b981; --warning: #f59e0b; --whatsapp: #25d366; --pdf-color: #ef4444;
         }
         [data-theme="cyberpunk"] {
@@ -33,18 +33,29 @@
             --border: rgba(55, 65, 81, 0.8); --accent: #06b6d4; --accent-glow: rgba(6, 182, 212, 0.5);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-app); color: var(--text-main); padding: 24px; min-height: 100vh; position: relative; overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; transition: var(--transition); }
+        body { background-color: var(--bg-app); color: var(--text-main); padding: 16px; min-height: 100vh; position: relative; overflow-x: hidden; }
+        @media (min-width: 768px) { body { padding: 24px; } }
+        
         body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(circle at 50% 50%, var(--accent-glow) 0%, transparent 60%); opacity: 0.15; pointer-events: none; z-index: -1; }
 
         .font-mono-custom { font-family: 'JetBrains Mono', monospace; }
-        .main-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+        .main-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
         
-        header { background: var(--bg-card); backdrop-filter: blur(16px); padding: 20px 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); flex-wrap: wrap; gap: 15px; }
-        header h1 { font-size: 1.4rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 12px; }
-        .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        header { background: var(--bg-card); backdrop-filter: blur(16px); padding: 16px 20px; border-radius: var(--radius-lg); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); flex-wrap: wrap; gap: 15px; }
+        @media (min-width: 768px) { header { padding: 20px 30px; } }
+
+        .header-brand { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .app-logo { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        header h1 { font-size: 1.2rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        @media (min-width: 768px) { header h1 { font-size: 1.4rem; } }
+
+        .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; width: 100%; justify-content: flex-start; }
+        @media (min-width: 900px) { .header-actions { width: auto; justify-content: flex-end; } }
         
-        .btn { padding: 10px 16px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; border: none; transition: var(--transition); font-size: 0.85rem; display: flex; align-items: center; gap: 8px; text-decoration: none;}
+        .btn { padding: 10px 14px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; border: none; transition: var(--transition); font-size: 0.8rem; display: flex; align-items: center; gap: 6px; text-decoration: none; white-space: nowrap;}
+        @media (min-width: 768px) { .btn { padding: 10px 16px; font-size: 0.85rem; gap: 8px; } }
+        
         .btn-primary { background: var(--accent); color: white; box-shadow: 0 0 15px var(--accent-glow); }
         .btn-primary:hover { filter: brightness(1.2); transform: translateY(-1px); }
         .btn-secondary { background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border); color: var(--text-main); backdrop-filter: blur(8px); }
@@ -53,54 +64,79 @@
         .btn-whatsapp { background: var(--whatsapp); color: white; box-shadow: 0 0 15px rgba(37, 211, 102, 0.4); }
         .btn-pdf { background: var(--pdf-color); color: white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
 
-        /* Banner Gantt Táctico Anual Mejorado */
-        .gantt-card { background: var(--bg-card); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px 25px; box-shadow: var(--shadow); }
+        /* Indicador Server Online / Offline */
+        .server-status { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 20px; border: 1px solid var(--border); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .status-dot.online { background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse-green 2s infinite; }
+        .status-dot.offline { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+        @keyframes pulse-green { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        /* Banner Gantt Táctico Responsive */
+        .gantt-card { background: var(--bg-card); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow); }
+        @media (min-width: 768px) { .gantt-card { padding: 20px 25px; } }
+
+        .gantt-controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
         .gantt-container { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; overflow-x: auto; padding-bottom: 5px; }
         .gantt-row { display: flex; align-items: center; gap: 15px; font-size: 0.85rem; }
-        .gantt-label { min-width: 150px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .gantt-timeline-track { flex-grow: 1; height: 22px; background: rgba(255,255,255,0.03); border-radius: 11px; position: relative; border: 1px solid var(--border); min-width: 700px; }
+        .gantt-label { min-width: 130px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+        @media (min-width: 768px) { .gantt-label { min-width: 150px; font-size: 0.85rem; } }
+
+        .gantt-timeline-track { flex-grow: 1; height: 22px; background: rgba(255,255,255,0.03); border-radius: 11px; position: relative; border: 1px solid var(--border); min-width: 600px; }
         .gantt-bar { position: absolute; height: 100%; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); box-shadow: 0 0 12px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); }
 
-        .grid-vacaciones { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        @media (max-width: 900px) { .grid-vacaciones { grid-template-columns: 1fr; } }
+        .grid-vacaciones { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 900px) { .grid-vacaciones { grid-template-columns: 1fr 1fr; gap: 24px; } }
         
-        .card { background: var(--bg-card); backdrop-filter: blur(16px); border-radius: var(--radius-lg); padding: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; }
-        .card h3 { font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .card { background: var(--bg-card); backdrop-filter: blur(16px); border-radius: var(--radius-lg); padding: 18px; box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; }
+        @media (min-width: 768px) { .card { padding: 25px; } }
+        .card h3 { font-size: 1rem; display: flex; align-items: center; justify-content: space-between; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        @media (min-width: 768px) { .card h3 { font-size: 1.1rem; } }
 
-        .absences-sidebar-list { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
-        .absence-sidebar-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 1px solid var(--border); font-size: 0.85rem; gap: 8px; }
+        .absences-sidebar-list { display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto; padding-right: 4px; }
+        .absence-sidebar-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 1px solid var(--border); font-size: 0.8rem; gap: 8px; }
+        @media (min-width: 768px) { .absence-sidebar-item { font-size: 0.85rem; padding: 12px; } }
         
-        .badge-absence { font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+        .badge-absence { font-size: 0.6rem; padding: 2px 5px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+        @media (min-width: 768px) { .badge-absence { font-size: 0.65rem; padding: 3px 6px; } }
         .badge-vacation { background: #10b981; color: white; }
         .badge-personal { background: #f59e0b; color: white; }
         .badge-status-enjoyed { background: #64748b; color: white; }
         .badge-status-upcoming { background: #3b82f6; color: white; }
 
-        .vacation-balance-list { display: flex; flex-direction: column; gap: 12px; max-height: 420px; overflow-y: auto; }
-        .vacation-balance-item { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; }
+        .vacation-balance-list { display: flex; flex-direction: column; gap: 12px; max-height: 380px; overflow-y: auto; }
+        .vacation-balance-item { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; }
+        @media (min-width: 768px) { .vacation-balance-item { padding: 14px; gap: 10px; font-size: 0.9rem; } }
         .vacation-balance-row { display: flex; justify-content: space-between; align-items: center; }
-        .vacation-inputs-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); background: var(--bg-app); padding: 8px; border-radius: 6px; border: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
-        .vacation-inputs-row input { width: 45px; padding: 4px; text-align: center; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); border-radius: 4px; font-weight: 600; }
-        .tech-color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px currentColor; }
+        .vacation-inputs-row { display: flex; gap: 6px; align-items: center; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); background: var(--bg-app); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; flex-wrap: wrap; }
+        @media (min-width: 768px) { .vacation-inputs-row { font-size: 0.75rem; gap: 8px; } }
+        .vacation-inputs-row input { width: 38px; padding: 3px; text-align: center; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); border-radius: 4px; font-weight: 600; }
+        @media (min-width: 768px) { .vacation-inputs-row input { width: 45px; padding: 4px; } }
+        .tech-color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px currentColor; }
+        @media (min-width: 768px) { .tech-color-dot { width: 12px; height: 12px; } }
 
         /* Lista de Técnicos en Gestión */
         .tech-mgmt-list { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; }
         .tech-mgmt-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border); font-size: 0.85rem; }
 
         /* Modales HUD */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 3000; }
-        .modal { background: var(--bg-card); border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: 30px; width: 440px; max-width: 90%; box-shadow: 0 0 40px var(--accent-glow); display: flex; flex-direction: column; gap: 20px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 3000; padding: 15px; }
+        .modal { background: var(--bg-card); border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: 20px; width: 100%; max-width: 440px; box-shadow: 0 0 40px var(--accent-glow); display: flex; flex-direction: column; gap: 15px; }
+        @media (min-width: 768px) { .modal { padding: 30px; gap: 20px; } }
         .modal-header { display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { display: flex; flex-direction: column; gap: 15px; }
+        .modal-body { display: flex; flex-direction: column; gap: 12px; }
+        @media (min-width: 768px) { .modal-body { gap: 15px; } }
         .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
-        .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); background: var(--bg-app); color: var(--text-main); border-radius: var(--radius-md); font-size: 0.9rem; font-family: 'JetBrains Mono', monospace; }
+        .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+        @media (min-width: 768px) { .form-group label { font-size: 0.85rem; } }
+        .form-group input, .form-group select { padding: 8px 10px; border: 1px solid var(--border); background: var(--bg-app); color: var(--text-main); border-radius: var(--radius-md); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; width: 100%; }
+        @media (min-width: 768px) { .form-group input, .form-group select { padding: 10px; font-size: 0.9rem; } }
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
 
         /* Alerta Anti-Solapamientos */
         #overlap-alert { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: var(--radius-md); padding: 10px 12px; font-size: 0.8rem; color: #fca5a5; display: none; align-items: center; gap: 8px; }
 
-        #toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg-card); border: 1px solid var(--accent); color: var(--text-main); padding: 12px 20px; border-radius: var(--radius-md); box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-weight: 600; font-size: 0.85rem; z-index: 4000; transform: translateY(100px); opacity: 0; transition: all 0.3s; backdrop-filter: blur(10px); }
+        #toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg-card); border: 1px solid var(--accent); color: var(--text-main); padding: 10px 16px; border-radius: var(--radius-md); box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-weight: 600; font-size: 0.8rem; z-index: 4000; transform: translateY(100px); opacity: 0; transition: all 0.3s; backdrop-filter: blur(10px); }
+        @media (min-width: 768px) { #toast { bottom: 24px; right: 24px; padding: 12px 20px; font-size: 0.85rem; } }
         #toast.show { transform: translateY(0); opacity: 1; }
 
         @media print {
@@ -119,31 +155,50 @@
     <div class="main-container">
         <!-- Cabecera HUD -->
         <header>
-            <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="header-brand">
                 <a href="index.html" class="btn btn-secondary" title="Volver al Portal"><i class="fa-solid fa-arrow-left"></i></a>
-                <h1>🌴 Centro de Vacaciones <span style="font-size: 0.7rem; padding: 2px 8px; background: var(--accent-glow); border: 1px solid var(--accent); border-radius: 20px; color: var(--accent);" class="font-mono-custom">HUD_V5</span></h1>
+                <!-- Logo desde GitHub -->
+                <img src="logo.joeg" alt="Logo" class="app-logo" onerror="this.style.display='none'">
+                <h1>🌴 Centro de Vacaciones <span style="font-size: 0.65rem; padding: 2px 8px; background: var(--accent-glow); border: 1px solid var(--accent); border-radius: 20px; color: var(--accent);" class="font-mono-custom">HUD_V6</span></h1>
             </div>
             <div class="header-actions">
-                <button class="btn btn-secondary" onclick="openTechModal()"><i class="fa-solid fa-users-gear"></i> Gestionar Técnicos</button>
-                <select id="theme-selector" onchange="cambiarTemaHUD(this.value)" class="form-group input" style="padding: 8px 12px; font-weight: 600;">
-                    <option value="stark">Stark Tech (Azul)</option>
+                <!-- Indicador Servidor En Vivo -->
+                <div class="server-status" id="server-status-indicator" title="Estado de conexión con el servidor">
+                    <span class="status-dot offline" id="server-status-dot"></span>
+                    <span id="server-status-text">Verificando...</span>
+                </div>
+                <button class="btn btn-secondary" onclick="openTechModal()"><i class="fa-solid fa-users-gear"></i> Técnicos</button>
+                <select id="theme-selector" onchange="cambiarTemaHUD(this.value)" class="form-group input" style="padding: 6px 10px; font-weight: 600; width: auto;">
+                    <option value="stark">Stark (Azul)</option>
                     <option value="cyberpunk">Cyberpunk (Neón)</option>
                     <option value="matrix">Matrix (Verde)</option>
                 </select>
-                <button class="btn btn-whatsapp" onclick="enviarWhatsAppVacaciones()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
-                <button class="btn btn-pdf" onclick="exportarPDFVacaciones()"><i class="fa-solid fa-print"></i> PDF</button>
+                <button class="btn btn-whatsapp" onclick="enviarWhatsAppVacaciones()"><i class="fa-brands fa-whatsapp"></i></button>
+                <button class="btn btn-pdf" onclick="exportarPDFVacaciones()"><i class="fa-solid fa-print"></i></button>
             </div>
         </header>
 
-        <!-- Gantt Táctico Anual -->
+        <!-- Gantt Táctico con Zoom (Anual / Mensual) -->
         <div class="gantt-card">
-            <h3 style="font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
-                <span><i class="fa-solid fa-timeline text-cyan-400"></i> Línea de Tiempo Táctico 2026</span>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="text-xs text-slate-400 font-mono-custom">Vista Anual Paralela</span>
+            <div class="gantt-controls">
+                <span style="font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-timeline text-cyan-400"></i> <span id="gantt-title-text">Línea de Tiempo Táctico 2026</span>
+                </span>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <!-- Selector de Vista -->
+                    <select id="gantt-mode-select" onchange="cambiarModoGantt(this.value)" class="form-group input" style="padding: 6px 10px; font-size: 0.75rem; width: auto;">
+                        <option value="annual">Vista Anual (365d)</option>
+                        <option value="monthly">Vista Mensual (Zoom)</option>
+                    </select>
+                    <!-- Controles de Mes (si está en modo mensual) -->
+                    <div id="monthly-nav-controls" style="display: none; align-items: center; gap: 4px;">
+                        <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="cambiarMesGantt(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span id="current-month-label" class="font-mono-custom" style="font-size: 0.75rem; padding: 0 4px; font-weight: 700;">Enero</span>
+                        <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="cambiarMesGantt(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
                     <button class="btn" style="width: 24px; height: 24px; padding:0; border-radius:50%; background:var(--border); color:var(--text-muted); font-size:0.75rem;" onclick="openGanttInfoModal()">i</button>
                 </div>
-            </h3>
+            </div>
             <div class="gantt-container" id="gantt-chart-container"></div>
         </div>
 
@@ -151,8 +206,8 @@
             <!-- Ausencias Registradas -->
             <div class="card">
                 <h3>
-                    <span>📋 Listado de Ausencias (Vacaciones / Días Libres)</span>
-                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="openAddAbsenceModal()">+ Registrar</button>
+                    <span>📋 Listado de Ausencias</span>
+                    <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openAddAbsenceModal()">+ Registrar</button>
                 </h3>
                 <div class="absences-sidebar-list" id="absences-sidebar-list"></div>
             </div>
@@ -195,7 +250,7 @@
                 <button class="btn btn-secondary" onclick="closeAbsenceModal()" style="padding: 4px 8px;">✕</button>
             </div>
             <div class="modal-body">
-                <div id="overlap-alert"><i class="fa-solid fa-triangle-exclamation"></i> <span>Alerta: Solapamiento detectado con otro compañero. Plantilla comprometida.</span></div>
+                <div id="overlap-alert"><i class="fa-solid fa-triangle-exclamation"></i> <span>Alerta: Solapamiento detectado con otro compañero.</span></div>
                 <div class="form-group">
                     <label>Técnico</label>
                     <select id="absence-tech-select" onchange="verificarSolapamientos()"></select>
@@ -218,7 +273,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeAbsenceModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="saveAbsence()">Confirmar Registro</button>
+                <button class="btn btn-primary" onclick="saveAbsence()">Confirmar</button>
             </div>
         </div>
     </div>
@@ -235,12 +290,12 @@
                     <label id="tech-form-title">Añadir Nuevo Técnico</label>
                     <div style="display: flex; gap: 8px;">
                         <input type="hidden" id="tech-edit-id">
-                        <input type="text" id="tech-name-input" placeholder="Nombre del técnico" style="flex-grow: 1;">
-                        <input type="color" id="tech-color-input" value="#3b82f6" style="width: 45px; height: 42px; border: 1px solid var(--border); background: var(--bg-app); border-radius: var(--radius-md); cursor: pointer;">
+                        <input type="text" id="tech-name-input" placeholder="Nombre" style="flex-grow: 1;">
+                        <input type="color" id="tech-color-input" value="#3b82f6" style="width: 40px; height: 38px; border: 1px solid var(--border); background: var(--bg-app); border-radius: var(--radius-md); cursor: pointer;">
                         <button class="btn btn-primary" onclick="saveTech()"><i class="fa-solid fa-save"></i></button>
                     </div>
                 </div>
-                <div style="margin-top: 10px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Listado Actual de Plantilla:</div>
+                <div style="margin-top: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Plantilla Actual:</div>
                 <div class="tech-mgmt-list" id="tech-mgmt-list"></div>
             </div>
             <div class="modal-footer"><button class="btn btn-primary" onclick="closeTechModal()">Cerrar</button></div>
@@ -255,11 +310,7 @@
                 <button class="btn btn-secondary" onclick="closeGanttInfoModal()" style="padding: 4px 8px;">✕</button>
             </div>
             <div class="modal-body" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted);">
-                <p>El <b style="color:var(--text-main);">Gantt Táctico Anual</b> mapea visualmente los periodos de vacaciones de todo el año sobre una escala de 365 días.</p>
-                <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-                    <li><strong>Barras de Colores:</strong> Cada técnico tiene asignado un tono único para identificar sus bloques de descanso de un vistazo.</li>
-                    <li><strong>Prevención de Coincidencias:</strong> Permite comprobar rápidamente si quedan suficientes técnicos operativos en plantilla durante periodos críticos.</li>
-                </ul>
+                <p>Permite alternar entre la visión global anual (365 días) y el modo de zoom mensual con los botones de desplazamiento de mes.</p>
             </div>
             <div class="modal-footer"><button class="btn btn-primary" onclick="closeGanttInfoModal()">Entendido</button></div>
         </div>
@@ -273,12 +324,8 @@
                 <button class="btn btn-secondary" onclick="closeBalanceInfoModal()" style="padding: 4px 8px;">✕</button>
             </div>
             <div class="modal-body" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted);">
-                <p>Fórmula de cálculo: <b style="color:var(--text-main);">Libres = Base (31) - Disfrutados + Ajuste</b></p>
-                <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-                    <li><strong>Base (31):</strong> Días anuales por convenio.</li>
-                    <li><strong>Disfrutados:</strong> Suma de días laborables consumidos por ausencias de vacaciones registradas más extras.</li>
-                    <li><strong>Ajuste / Extra:</strong> Correcciones manuales para compensaciones específicas de la empresa.</li>
-                </ul>
+                <p>Fórmula: <b style="color:var(--text-main);">Libres = Base (31) - Disfrutados + Ajuste</b></p>
+                <p style="margin-top:6px;">Se descuentan fines de semana y festivos oficiales de la Comunidad Valenciana automáticamente.</p>
             </div>
             <div class="modal-footer"><button class="btn btn-primary" onclick="closeBalanceInfoModal()">Entendido</button></div>
         </div>
@@ -299,6 +346,26 @@
         let ausencias = [];
         let vacacionesData = {};
 
+        // Estado del Gantt y Festivos Comunidad Valenciana 2026
+        let ganttMode = 'annual'; // 'annual' o 'monthly'
+        let currentMonthIndex = 0; // 0 = Enero, 11 = Diciembre
+        const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        
+        // Festivos de Valencia 2026 (ejemplo aproximado de festivos nacionales y autonómicos oficiales)
+        const festivosValència2026 = [
+            '2026-01-01', '2026-01-06', '2026-03-19', '2026-04-03', '2026-04-06', 
+            '2026-05-01', '2026-06-24', '2026-08-15', '2026-10-09', '2026-10-12', 
+            '2026-11-01', '2026-12-08', '2026-12-25'
+        ];
+
+        // Cargar Tema Guardado en LocalStorage al iniciar
+        const savedTheme = localStorage.getItem('hud_theme') || 'stark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.addEventListener("DOMContentLoaded", () => {
+            const themeSelect = document.getElementById('theme-selector');
+            if(themeSelect) themeSelect.value = savedTheme;
+        });
+
         function playBeep(tipo = 'click') {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -316,6 +383,7 @@
 
         function cambiarTemaHUD(tema) {
             document.documentElement.setAttribute('data-theme', tema);
+            localStorage.setItem('hud_theme', tema);
             playBeep('click');
             showToast(`🎨 Tema HUD cambiado a ${tema.toUpperCase()}`);
         }
@@ -323,6 +391,25 @@
         function showToast(msg) {
             const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // Comprobador de conexión con servidor Supabase
+        async function verificarConexionServidor() {
+            const dot = document.getElementById('server-status-dot');
+            const txt = document.getElementById('server-status-text');
+            if (!dbSupabase) {
+                dot.className = 'status-dot offline'; txt.innerText = 'Offline Mode'; return;
+            }
+            try {
+                let { error } = await dbSupabase.from('tecnicos').select('id').limit(1);
+                if (!error) {
+                    dot.className = 'status-dot online'; txt.innerText = 'Online Server';
+                } else {
+                    dot.className = 'status-dot offline'; txt.innerText = 'Server Error';
+                }
+            } catch(e) {
+                dot.className = 'status-dot offline'; txt.innerText = 'Disconnected';
+            }
         }
 
         async function init() {
@@ -342,6 +429,9 @@
                 }
             }
             render();
+            verificarConexionServidor();
+            // Comprobar estado cada 30 segundos
+            setInterval(verificarConexionServidor, 30000);
         }
 
         function render() {
@@ -351,12 +441,46 @@
             renderTechManagementList();
         }
 
-        // Renderizado del Gantt Táctico Anual Mejorado
+        // Control de Modos Gantt (Anual / Mensual)
+        function cambiarModoGantt(modo) {
+            ganttMode = modo;
+            const nav = document.getElementById('monthly-nav-controls');
+            const title = document.getElementById('gantt-title-text');
+            if(modo === 'monthly') {
+                nav.style.display = 'flex';
+                title.innerText = `Línea de Tiempo • ${nombresMeses[currentMonthIndex]} 2026`;
+            } else {
+                nav.style.display = 'none';
+                title.innerText = `Línea de Tiempo Táctico 2026`;
+            }
+            renderGanttChart();
+        }
+
+        function cambiarMesGantt(dir) {
+            currentMonthIndex += dir;
+            if(currentMonthIndex < 0) currentMonthIndex = 11;
+            if(currentMonthIndex > 11) currentMonthIndex = 0;
+            document.getElementById('current-month-label').innerText = nombresMeses[currentMonthIndex];
+            document.getElementById('gantt-title-text').innerText = `Línea de Tiempo • ${nombresMeses[currentMonthIndex]} 2026`;
+            renderGanttChart();
+        }
+
+        // Renderizado del Gantt Táctico con soporte Anual y Mensual
         function renderGanttChart() {
             const container = document.getElementById('gantt-chart-container');
             container.innerHTML = '';
+            
             let yearStart = new Date('2026-01-01');
-            let totalYearDays = 365;
+            let totalDays = 365;
+            let startDateLimit = new Date('2026-01-01');
+            let endDateLimit = new Date('2026-12-31');
+
+            if(ganttMode === 'monthly') {
+                startDateLimit = new Date(2026, currentMonthIndex, 1);
+                endDateLimit = new Date(2026, currentMonthIndex + 1, 0); // último día del mes
+                totalDays = endDateLimit.getDate();
+                yearStart = startDateLimit;
+            }
 
             tecnicos.forEach(t => {
                 let techAbs = ausencias.filter(a => a.techName === t.name && a.type === 'vacation');
@@ -364,14 +488,21 @@
                 techAbs.forEach(a => {
                     let sDate = new Date(a.start);
                     let eDate = new Date(a.end);
-                    let startDayNum = Math.floor((sDate - yearStart) / (1000 * 60 * 60 * 24));
-                    let duration = Math.floor((eDate - sDate) / (1000 * 60 * 60 * 24)) + 1;
+
+                    // Comprobar si solapa con el rango actual visualizado
+                    if (eDate < startDateLimit || sDate > endDateLimit) return;
+
+                    let effectiveStart = sDate < startDateLimit ? startDateLimit : sDate;
+                    let effectiveEnd = eDate > endDateLimit ? endDateLimit : eDate;
+
+                    let startDayNum = Math.floor((effectiveStart - yearStart) / (1000 * 60 * 60 * 24));
+                    let duration = Math.floor((effectiveEnd - effectiveStart) / (1000 * 60 * 60 * 24)) + 1;
                     if (startDayNum < 0) startDayNum = 0;
                     
-                    let leftPct = (startDayNum / totalYearDays) * 100;
-                    let widthPct = (duration / totalYearDays) * 100;
+                    let leftPct = (startDayNum / totalDays) * 100;
+                    let widthPct = (duration / totalDays) * 100;
 
-                    barsHTML += `<div class="gantt-bar" style="left: ${leftPct}%; width: ${widthPct}%; background: ${t.color};" title="${a.start} al ${a.end} (${duration}d)"><span style="padding: 0 4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${duration}d</span></div>`;
+                    barsHTML += `<div class="gantt-bar" style="left: ${leftPct}%; width: ${widthPct}%; background: ${t.color};" title="${a.start} al ${a.end}"><span style="padding: 0 4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${duration}d</span></div>`;
                 });
 
                 container.innerHTML += `
@@ -387,7 +518,7 @@
             const container = document.getElementById('absences-sidebar-list');
             container.innerHTML = '';
             if (ausencias.length === 0) {
-                container.innerHTML = '<div style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:15px;">No hay ausencias registradas.</div>';
+                container.innerHTML = '<div style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:15px;">No hay ausencias registradas.</div>';
                 return;
             }
             let sorted = [...ausencias].sort((a, b) => new Date(a.start) - new Date(b.start));
@@ -402,17 +533,34 @@
                 container.innerHTML += `
                     <div class="absence-sidebar-item ${isEnjoyed ? 'opacity-60' : ''}">
                         <div style="display:flex; flex-direction:column; gap:4px;">
-                            <div style="display:flex; align-items:center; gap:6px;">
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                                 <strong>${abs.techName}</strong>
                                 <span class="badge-absence ${badge}">${label}</span>
                                 ${statusBadge}
                             </div>
-                            <div style="font-size:0.75rem; color:var(--text-muted);" class="font-mono-custom">Del ${abs.start} al ${abs.end}</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted);" class="font-mono-custom">Del ${abs.start} al ${abs.end}</div>
                         </div>
-                        <button class="btn btn-danger" style="padding: 6px 10px; font-size:0.8rem;" onclick="deleteAbsence(${abs.id})">✕</button>
+                        <button class="btn btn-danger" style="padding: 4px 8px; font-size:0.75rem;" onclick="deleteAbsence(${abs.id})">✕</button>
                     </div>
                 `;
             });
+        }
+
+        // Cálculo de días laborables descontando fines de semana y festivos de Valencia
+        function calcularDiasLaborables(startDate, endDate) {
+            let s = new Date(startDate), e = new Date(endDate);
+            let diff = 0;
+            let cur = new Date(s);
+            while(cur <= e) {
+                let dayW = cur.getDay();
+                let dateStr = cur.toISOString().split('T')[0];
+                // Si no es fin de semana (0=Domingo, 6=Sábado) y no es festivo en Valencia
+                if(dayW !== 0 && dayW !== 6 && !festivosValència2026.includes(dateStr)) {
+                    diff++;
+                }
+                cur.setDate(cur.getDate() + 1);
+            }
+            return diff;
         }
 
         function calcularResumenArray() {
@@ -422,14 +570,7 @@
                 let diasCal = 0, periodos = [];
                 ausencias.forEach(abs => {
                     if (abs.techName === t.name && abs.type === 'vacation') {
-                        let s = new Date(abs.start), e = new Date(abs.end);
-                        let diff = 0;
-                        let cur = new Date(s);
-                        while(cur <= e) {
-                            let dayW = cur.getDay();
-                            if(dayW !== 0 && dayW !== 6) diff++; // Solo laborables
-                            cur.setDate(cur.getDate() + 1);
-                        }
+                        let diff = calcularDiasLaborables(abs.start, abs.end);
                         diasCal += diff;
                         periodos.push(`${abs.start.split('-').reverse().join('/')} al ${abs.end.split('-').reverse().join('/')}`);
                     }
@@ -450,12 +591,7 @@
                 let diasCal = 0;
                 ausencias.forEach(abs => {
                     if (abs.techName === t.name && abs.type === 'vacation') {
-                        let s = new Date(abs.start), e = new Date(abs.end), cur = new Date(s);
-                        while(cur <= e) {
-                            let dayW = cur.getDay();
-                            if(dayW !== 0 && dayW !== 6) diasCal++;
-                            cur.setDate(cur.getDate() + 1);
-                        }
+                        diasCal += calcularDiasLaborables(abs.start, abs.end);
                     }
                 });
                 let d = vacacionesData[t.name];
@@ -469,17 +605,17 @@
                                 <span class="tech-color-dot" style="background: ${t.color}; color:${t.color}"></span>
                                 <span>${t.name}</span>
                             </div>
-                            <span style="font-weight: 800; font-size: 1rem; color: ${restantes < 0 ? '#ef4444' : '#10b981'};" class="font-mono-custom">${restantes} días libres</span>
+                            <span style="font-weight: 800; font-size: 0.95rem; color: ${restantes < 0 ? '#ef4444' : '#10b981'};" class="font-mono-custom">${restantes} días libres</span>
                         </div>
-                        <div style="font-size: 0.8rem; display: flex; justify-content: space-between; color: var(--text-muted); padding: 2px 4px;">
+                        <div style="font-size: 0.75rem; display: flex; justify-content: space-between; color: var(--text-muted); padding: 2px 4px;">
                             <span>Disfrutados: <b style="color:var(--text-main);">${disfrutados}d</b></span>
                             <span>Por Disfrutar: <b style="color:${restantes < 0 ? '#ef4444' : '#10b981'};">${restantes}d</b></span>
                         </div>
                         <div class="vacation-inputs-row">
                             <span>Base: <b>31</b></span>
-                            <span>Lab.Auto: <b>${diasCal}</b></span>
-                            <span>Extra: <input type="number" value="${d.extraDisfrutados}" onchange="actualizarSaldos('${t.name}', this.value, null)"></span>
-                            <span>Ajuste: <input type="number" value="${d.ajusteManual}" onchange="actualizarSaldos('${t.name}', null, this.value)"></span>
+                            <span>Lab: <b>${diasCal}</b></span>
+                            <span>Ext: <input type="number" value="${d.extraDisfrutados}" onchange="actualizarSaldos('${t.name}', this.value, null)"></span>
+                            <span>Ajust: <input type="number" value="${d.ajusteManual}" onchange="actualizarSaldos('${t.name}', null, this.value)"></span>
                         </div>
                     </div>
                 `;
@@ -538,7 +674,6 @@
             window.print();
         }
 
-        // Gestión de Técnicos (Añadir / Editar / Eliminar)
         function renderTechManagementList() {
             const container = document.getElementById('tech-mgmt-list');
             container.innerHTML = '';
@@ -574,7 +709,7 @@
 
             if(id) {
                 let t = tecnicos.find(item => item.id == id);
-                if(t) t.name = name; t.color = color;
+                if(t) { t.name = name; t.color = color; }
                 if(dbSupabase) await dbSupabase.from('tecnicos').update({ name, color }).eq('id', id);
             } else {
                 let newId = Date.now();
