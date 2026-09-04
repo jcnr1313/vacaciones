@@ -157,9 +157,9 @@
         <header>
             <div class="header-brand">
                 <a href="index.html" class="btn btn-secondary" title="Volver al Portal"><i class="fa-solid fa-arrow-left"></i></a>
-                <!-- Logo desde GitHub -->
-                <img src="logo.joeg" alt="Logo" class="app-logo" onerror="this.style.display='none'">
-                <h1>🌴 Centro de Vacaciones <span style="font-size: 0.65rem; padding: 2px 8px; background: var(--accent-glow); border: 1px solid var(--accent); border-radius: 20px; color: var(--accent);" class="font-mono-custom">HUD_V6</span></h1>
+                <!-- Logo con extensión correcta logo.jpeg -->
+                <img src="logo.jpeg" alt="Logo" class="app-logo" onerror="this.style.display='none'">
+                <h1>🌴 Centro de Vacaciones <span style="font-size: 0.65rem; padding: 2px 8px; background: var(--accent-glow); border: 1px solid var(--accent); border-radius: 20px; color: var(--accent);" class="font-mono-custom">HUD_V6.1</span></h1>
             </div>
             <div class="header-actions">
                 <!-- Indicador Servidor En Vivo -->
@@ -185,12 +185,10 @@
                     <i class="fa-solid fa-timeline text-cyan-400"></i> <span id="gantt-title-text">Línea de Tiempo Táctico 2026</span>
                 </span>
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <!-- Selector de Vista -->
                     <select id="gantt-mode-select" onchange="cambiarModoGantt(this.value)" class="form-group input" style="padding: 6px 10px; font-size: 0.75rem; width: auto;">
                         <option value="annual">Vista Anual (365d)</option>
                         <option value="monthly">Vista Mensual (Zoom)</option>
                     </select>
-                    <!-- Controles de Mes (si está en modo mensual) -->
                     <div id="monthly-nav-controls" style="display: none; align-items: center; gap: 4px;">
                         <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="cambiarMesGantt(-1)"><i class="fa-solid fa-chevron-left"></i></button>
                         <span id="current-month-label" class="font-mono-custom" style="font-size: 0.75rem; padding: 0 4px; font-weight: 700;">Enero</span>
@@ -295,7 +293,7 @@
                         <button class="btn btn-primary" onclick="saveTech()"><i class="fa-solid fa-save"></i></button>
                     </div>
                 </div>
-                <div style="margin-top: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Plantilla Actual:</div>
+                <div style="margin-top: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Plantilla Actual (Sincronizada con Supabase):</div>
                 <div class="tech-mgmt-list" id="tech-mgmt-list"></div>
             </div>
             <div class="modal-footer"><button class="btn btn-primary" onclick="closeTechModal()">Cerrar</button></div>
@@ -337,28 +335,20 @@
         let dbSupabase = null;
         try { dbSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) {}
 
-        let tecnicos = [
-            { id: 1, name: "J.Carlos", color: "#facc15" },
-            { id: 2, name: "Óscar Ibarreta", color: "#ef4444" },
-            { id: 3, name: "Lucas", color: "#d946ef" },
-            { id: 4, name: "Óscar Ibañez", color: "#3b82f6" }
-        ];
+        let tecnicos = [];
         let ausencias = [];
         let vacacionesData = {};
 
-        // Estado del Gantt y Festivos Comunidad Valenciana 2026
-        let ganttMode = 'annual'; // 'annual' o 'monthly'
-        let currentMonthIndex = 0; // 0 = Enero, 11 = Diciembre
+        let ganttMode = 'annual';
+        let currentMonthIndex = 0;
         const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         
-        // Festivos de Valencia 2026 (ejemplo aproximado de festivos nacionales y autonómicos oficiales)
         const festivosValència2026 = [
             '2026-01-01', '2026-01-06', '2026-03-19', '2026-04-03', '2026-04-06', 
             '2026-05-01', '2026-06-24', '2026-08-15', '2026-10-09', '2026-10-12', 
             '2026-11-01', '2026-12-08', '2026-12-25'
         ];
 
-        // Cargar Tema Guardado en LocalStorage al iniciar
         const savedTheme = localStorage.getItem('hud_theme') || 'stark';
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.addEventListener("DOMContentLoaded", () => {
@@ -393,7 +383,6 @@
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        // Comprobador de conexión con servidor Supabase
         async function verificarConexionServidor() {
             const dot = document.getElementById('server-status-dot');
             const txt = document.getElementById('server-status-text');
@@ -414,6 +403,23 @@
 
         async function init() {
             if (dbSupabase) {
+                // Cargar Técnicos desde Supabase
+                let { data: techData, error: techError } = await dbSupabase.from('tecnicos').select('*');
+                if (techData && techData.length > 0) {
+                    tecnicos = techData.map(t => ({ id: t.id, name: t.name, color: t.color }));
+                } else {
+                    // Si la tabla está vacía en Supabase, inicializamos unos por defecto y los guardamos
+                    tecnicos = [
+                        { id: 1, name: "J.Carlos", color: "#facc15" },
+                        { id: 2, name: "Óscar Ibarreta", color: "#ef4444" },
+                        { id: 3, name: "Lucas", color: "#d946ef" },
+                        { id: 4, name: "Óscar Ibañez", color: "#3b82f6" }
+                    ];
+                    for(let t of tecnicos) {
+                        await dbSupabase.from('tecnicos').insert([{ id: t.id, name: t.name, color: t.color }]);
+                    }
+                }
+
                 let { data: absData } = await dbSupabase.from('ausencias').select('*');
                 if (absData) ausencias = absData.map(a => ({ id: a.id, techName: a.tech_name, type: a.type, start: a.start_date, end: a.end_date }));
 
@@ -422,15 +428,9 @@
                     vacacionesData = {};
                     vacData.forEach(v => vacacionesData[v.tech_name] = { extraDisfrutados: v.extra_disfrutados || 0, ajusteManual: v.ajuste_manual || 0 });
                 }
-
-                let { data: techData } = await dbSupabase.from('tecnicos').select('*');
-                if (techData && techData.length > 0) {
-                    tecnicos = techData.map(t => ({ id: t.id, name: t.name, color: t.color }));
-                }
             }
             render();
             verificarConexionServidor();
-            // Comprobar estado cada 30 segundos
             setInterval(verificarConexionServidor, 30000);
         }
 
@@ -441,7 +441,6 @@
             renderTechManagementList();
         }
 
-        // Control de Modos Gantt (Anual / Mensual)
         function cambiarModoGantt(modo) {
             ganttMode = modo;
             const nav = document.getElementById('monthly-nav-controls');
@@ -465,7 +464,6 @@
             renderGanttChart();
         }
 
-        // Renderizado del Gantt Táctico con soporte Anual y Mensual
         function renderGanttChart() {
             const container = document.getElementById('gantt-chart-container');
             container.innerHTML = '';
@@ -477,7 +475,7 @@
 
             if(ganttMode === 'monthly') {
                 startDateLimit = new Date(2026, currentMonthIndex, 1);
-                endDateLimit = new Date(2026, currentMonthIndex + 1, 0); // último día del mes
+                endDateLimit = new Date(2026, currentMonthIndex + 1, 0);
                 totalDays = endDateLimit.getDate();
                 yearStart = startDateLimit;
             }
@@ -489,7 +487,6 @@
                     let sDate = new Date(a.start);
                     let eDate = new Date(a.end);
 
-                    // Comprobar si solapa con el rango actual visualizado
                     if (eDate < startDateLimit || sDate > endDateLimit) return;
 
                     let effectiveStart = sDate < startDateLimit ? startDateLimit : sDate;
@@ -546,7 +543,6 @@
             });
         }
 
-        // Cálculo de días laborables descontando fines de semana y festivos de Valencia
         function calcularDiasLaborables(startDate, endDate) {
             let s = new Date(startDate), e = new Date(endDate);
             let diff = 0;
@@ -554,7 +550,6 @@
             while(cur <= e) {
                 let dayW = cur.getDay();
                 let dateStr = cur.toISOString().split('T')[0];
-                // Si no es fin de semana (0=Domingo, 6=Sábado) y no es festivo en Valencia
                 if(dayW !== 0 && dayW !== 6 && !festivosValència2026.includes(dateStr)) {
                     diff++;
                 }
@@ -708,27 +703,35 @@
             if(!name) { alert("Introduce un nombre."); return; }
 
             if(id) {
+                // Actualizar técnico existente
                 let t = tecnicos.find(item => item.id == id);
                 if(t) { t.name = name; t.color = color; }
-                if(dbSupabase) await dbSupabase.from('tecnicos').update({ name, color }).eq('id', id);
+                if(dbSupabase) {
+                    await dbSupabase.from('tecnicos').update({ name, color }).eq('id', id);
+                }
             } else {
+                // Crear nuevo técnico y guardarlo permanentemente en Supabase
                 let newId = Date.now();
                 tecnicos.push({ id: newId, name, color });
-                if(dbSupabase) await dbSupabase.from('tecnicos').insert([{ id: newId, name, color }]);
+                if(dbSupabase) {
+                    await dbSupabase.from('tecnicos').insert([{ id: newId, name, color }]);
+                }
             }
 
             document.getElementById('tech-edit-id').value = '';
             document.getElementById('tech-name-input').value = '';
             document.getElementById('tech-form-title').innerText = 'Añadir Nuevo Técnico';
             playBeep('success');
-            render(); showToast("💾 Técnico guardado correctamente");
+            render(); showToast("💾 Técnico guardado en servidor");
         }
 
         async function deleteTech(id) {
             tecnicos = tecnicos.filter(t => t.id !== id);
-            if(dbSupabase) await dbSupabase.from('tecnicos').delete().eq('id', id);
+            if(dbSupabase) {
+                await dbSupabase.from('tecnicos').delete().eq('id', id);
+            }
             playBeep('click');
-            render(); showToast("🗑️ Técnico eliminado");
+            render(); showToast("🗑️ Técnico eliminado de base de datos");
         }
 
         function openAddAbsenceModal() {
