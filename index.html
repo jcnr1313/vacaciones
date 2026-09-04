@@ -45,8 +45,9 @@
         header { background: var(--bg-card); backdrop-filter: blur(16px); padding: 16px 20px; border-radius: var(--radius-lg); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); flex-wrap: wrap; gap: 15px; }
         @media (min-width: 768px) { header { padding: 20px 30px; } }
 
-        .header-brand { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .app-logo { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        .header-brand { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        /* Logo corregido: más grande, altura fija y ancho automático */
+        .app-logo { height: 48px; width: auto; max-width: 120px; border-radius: 10px; object-fit: contain; border: 1px solid var(--accent); box-shadow: 0 0 12px var(--accent-glow); background: rgba(0,0,0,0.4); padding: 2px; }
         header h1 { font-size: 1.2rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
         @media (min-width: 768px) { header h1 { font-size: 1.4rem; } }
 
@@ -64,25 +65,24 @@
         .btn-whatsapp { background: var(--whatsapp); color: white; box-shadow: 0 0 15px rgba(37, 211, 102, 0.4); }
         .btn-pdf { background: var(--pdf-color); color: white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
 
-        /* Indicador Server Online / Offline */
         .server-status { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 20px; border: 1px solid var(--border); }
         .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
         .status-dot.online { background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse-green 2s infinite; }
         .status-dot.offline { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
         @keyframes pulse-green { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-        /* Banner Gantt Táctico Responsive */
+        /* Banner Gantt Táctico Mejorado */
         .gantt-card { background: var(--bg-card); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow); }
         @media (min-width: 768px) { .gantt-card { padding: 20px 25px; } }
 
         .gantt-controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-        .gantt-container { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .gantt-row { display: flex; align-items: center; gap: 15px; font-size: 0.85rem; }
-        .gantt-label { min-width: 130px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
-        @media (min-width: 768px) { .gantt-label { min-width: 150px; font-size: 0.85rem; } }
+        .gantt-container { display: flex; flex-direction: column; gap: 14px; margin-top: 15px; overflow-x: auto; padding-bottom: 8px; }
+        .gantt-row { display: flex; align-items: center; gap: 15px; font-size: 0.85rem; background: rgba(0,0,0,0.15); padding: 8px 10px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.03); }
+        .gantt-label { min-width: 130px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+        @media (min-width: 768px) { .gantt-label { min-width: 150px; font-size: 0.9rem; } }
 
-        .gantt-timeline-track { flex-grow: 1; height: 22px; background: rgba(255,255,255,0.03); border-radius: 11px; position: relative; border: 1px solid var(--border); min-width: 600px; }
-        .gantt-bar { position: absolute; height: 100%; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); box-shadow: 0 0 12px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); }
+        .gantt-timeline-track { flex-grow: 1; height: 26px; background: rgba(255,255,255,0.04); border-radius: 13px; position: relative; border: 1px solid var(--border); min-width: 650px; }
+        .gantt-bar { position: absolute; height: 100%; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); box-shadow: 0 0 12px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); }
 
         .grid-vacaciones { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media (min-width: 900px) { .grid-vacaciones { grid-template-columns: 1fr 1fr; gap: 24px; } }
@@ -114,7 +114,6 @@
         .tech-color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px currentColor; }
         @media (min-width: 768px) { .tech-color-dot { width: 12px; height: 12px; } }
 
-        /* Lista de Técnicos en Gestión */
         .tech-mgmt-list { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; }
         .tech-mgmt-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border); font-size: 0.85rem; }
 
@@ -132,7 +131,6 @@
         @media (min-width: 768px) { .form-group input, .form-group select { padding: 10px; font-size: 0.9rem; } }
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
 
-        /* Alerta Anti-Solapamientos */
         #overlap-alert { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: var(--radius-md); padding: 10px 12px; font-size: 0.8rem; color: #fca5a5; display: none; align-items: center; gap: 8px; }
 
         #toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg-card); border: 1px solid var(--accent); color: var(--text-main); padding: 10px 16px; border-radius: var(--radius-md); box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-weight: 600; font-size: 0.8rem; z-index: 4000; transform: translateY(100px); opacity: 0; transition: all 0.3s; backdrop-filter: blur(10px); }
@@ -157,12 +155,11 @@
         <header>
             <div class="header-brand">
                 <a href="index.html" class="btn btn-secondary" title="Volver al Portal"><i class="fa-solid fa-arrow-left"></i></a>
-                <!-- Logo con extensión correcta logo.jpeg -->
+                <!-- Logo mejorado y de tamaño correcto -->
                 <img src="logo.jpeg" alt="Logo" class="app-logo" onerror="this.style.display='none'">
                 <h1>🌴 Centro de Vacaciones <span style="font-size: 0.65rem; padding: 2px 8px; background: var(--accent-glow); border: 1px solid var(--accent); border-radius: 20px; color: var(--accent);" class="font-mono-custom">HUD_V6.1</span></h1>
             </div>
             <div class="header-actions">
-                <!-- Indicador Servidor En Vivo -->
                 <div class="server-status" id="server-status-indicator" title="Estado de conexión con el servidor">
                     <span class="status-dot offline" id="server-status-dot"></span>
                     <span id="server-status-text">Verificando...</span>
@@ -178,7 +175,7 @@
             </div>
         </header>
 
-        <!-- Gantt Táctico con Zoom (Anual / Mensual) -->
+        <!-- Gantt Táctico con Zoom -->
         <div class="gantt-card">
             <div class="gantt-controls">
                 <span style="font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
@@ -194,7 +191,7 @@
                         <span id="current-month-label" class="font-mono-custom" style="font-size: 0.75rem; padding: 0 4px; font-weight: 700;">Enero</span>
                         <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="cambiarMesGantt(1)"><i class="fa-solid fa-chevron-right"></i></button>
                     </div>
-                    <button class="btn" style="width: 24px; height: 24px; padding:0; border-radius:50%; background:var(--border); color:var(--text-muted); font-size:0.75rem;" onclick="openGanttInfoModal()">i</button>
+                    <button class="btn" style="width: 26px; height: 26px; padding:0; border-radius:50%; background:var(--border); color:var(--text-main); font-size:0.75rem; display:flex; align-items:center; justify-content:center;" onclick="openGanttInfoModal()" title="Ayuda sobre Línea de Tiempo">i</button>
                 </div>
             </div>
             <div class="gantt-container" id="gantt-chart-container"></div>
@@ -205,7 +202,10 @@
             <div class="card">
                 <h3>
                     <span>📋 Listado de Ausencias</span>
-                    <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openAddAbsenceModal()">+ Registrar</button>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openAddAbsenceModal()">+ Registrar</button>
+                        <button class="btn" style="width: 26px; height: 26px; padding:0; border-radius:50%; background:var(--border); color:var(--text-main); font-size:0.75rem; display:flex; align-items:center; justify-content:center;" onclick="openAbsenceInfoModal()" title="Ayuda sobre Ausencias">i</button>
+                    </div>
                 </h3>
                 <div class="absences-sidebar-list" id="absences-sidebar-list"></div>
             </div>
@@ -214,7 +214,7 @@
             <div class="card">
                 <h3>
                     <span>🏖️ Control de Saldos (Convenio: 31)</span>
-                    <button class="btn" style="width: 24px; height: 24px; padding:0; border-radius:50%; background:var(--border); color:var(--text-muted); font-size:0.75rem;" onclick="openBalanceInfoModal()">i</button>
+                    <button class="btn" style="width: 26px; height: 26px; padding:0; border-radius:50%; background:var(--border); color:var(--text-main); font-size:0.75rem; display:flex; align-items:center; justify-content:center;" onclick="openBalanceInfoModal()" title="Ayuda sobre Saldos">i</button>
                 </h3>
                 <div class="vacation-balance-list" id="vacation-balance-list"></div>
             </div>
@@ -308,9 +308,25 @@
                 <button class="btn btn-secondary" onclick="closeGanttInfoModal()" style="padding: 4px 8px;">✕</button>
             </div>
             <div class="modal-body" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted);">
-                <p>Permite alternar entre la visión global anual (365 días) y el modo de zoom mensual con los botones de desplazamiento de mes.</p>
+                <p>Permite visualizar gráficamente los periodos de vacaciones de cada técnico a lo largo del año.</p>
+                <p style="margin-top:6px;">Puedes alternar entre la <b>Vista Anual (365 días)</b> o usar la <b>Vista Mensual con Zoom</b> para detallar mes a mes con los botones de flechas.</p>
             </div>
             <div class="modal-footer"><button class="btn btn-primary" onclick="closeGanttInfoModal()">Entendido</button></div>
+        </div>
+    </div>
+
+    <!-- Modal Ayuda Listado de Ausencias -->
+    <div class="modal-overlay" id="absence-info-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="text-lg font-bold">ℹ️ Guía de Listado de Ausencias</h3>
+                <button class="btn btn-secondary" onclick="closeAbsenceInfoModal()" style="padding: 4px 8px;">✕</button>
+            </div>
+            <div class="modal-body" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted);">
+                <p>Muestra cronológicamente todas las ausencias registradas (tanto vacaciones como días libres).</p>
+                <p style="margin-top:6px;">Las etiquetas indican si la ausencia ya ha sido <b>Disfrutada</b> o si es una fecha <b>Próxima</b>. Puedes pulsar el botón rojo de eliminar para borrar cualquier registro erróneo.</p>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="closeAbsenceInfoModal()">Entendido</button></div>
         </div>
     </div>
 
@@ -318,12 +334,13 @@
     <div class="modal-overlay" id="balance-info-modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="text-lg font-bold">ℹ️ Guía de Saldos Tácticos</h3>
+                <h3 class="text-lg font-bold">ℹ️ Guía de Control de Saldos</h3>
                 <button class="btn btn-secondary" onclick="closeBalanceInfoModal()" style="padding: 4px 8px;">✕</button>
             </div>
             <div class="modal-body" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted);">
-                <p>Fórmula: <b style="color:var(--text-main);">Libres = Base (31) - Disfrutados + Ajuste</b></p>
-                <p style="margin-top:6px;">Se descuentan fines de semana y festivos oficiales de la Comunidad Valenciana automáticamente.</p>
+                <p>Calcula automáticamente los días laborables descontando fines de semana y festivos oficiales de la Comunidad Valenciana 2026.</p>
+                <p style="margin-top:6px;">Fórmula aplicable:<br><b style="color:var(--text-main);">Días Libres = Base (31) - Disfrutados + Ajustes Manuales</b></p>
+                <p style="margin-top:6px;">Puedes modificar manualmente los campos "Ext" (días extra) o "Ajust" (corrección de saldo) según convenga y se guardarán en Supabase.</p>
             </div>
             <div class="modal-footer"><button class="btn btn-primary" onclick="closeBalanceInfoModal()">Entendido</button></div>
         </div>
@@ -403,12 +420,10 @@
 
         async function init() {
             if (dbSupabase) {
-                // Cargar Técnicos desde Supabase
-                let { data: techData, error: techError } = await dbSupabase.from('tecnicos').select('*');
+                let { data: techData } = await dbSupabase.from('tecnicos').select('*');
                 if (techData && techData.length > 0) {
                     tecnicos = techData.map(t => ({ id: t.id, name: t.name, color: t.color }));
                 } else {
-                    // Si la tabla está vacía en Supabase, inicializamos unos por defecto y los guardamos
                     tecnicos = [
                         { id: 1, name: "J.Carlos", color: "#facc15" },
                         { id: 2, name: "Óscar Ibarreta", color: "#ef4444" },
@@ -703,14 +718,12 @@
             if(!name) { alert("Introduce un nombre."); return; }
 
             if(id) {
-                // Actualizar técnico existente
                 let t = tecnicos.find(item => item.id == id);
                 if(t) { t.name = name; t.color = color; }
                 if(dbSupabase) {
                     await dbSupabase.from('tecnicos').update({ name, color }).eq('id', id);
                 }
             } else {
-                // Crear nuevo técnico y guardarlo permanentemente en Supabase
                 let newId = Date.now();
                 tecnicos.push({ id: newId, name, color });
                 if(dbSupabase) {
@@ -770,8 +783,13 @@
 
         function openTechModal() { document.getElementById('tech-modal-overlay').style.display = 'flex'; }
         function closeTechModal() { document.getElementById('tech-modal-overlay').style.display = 'none'; }
+        
         function openGanttInfoModal() { document.getElementById('gantt-info-modal-overlay').style.display = 'flex'; }
         function closeGanttInfoModal() { document.getElementById('gantt-info-modal-overlay').style.display = 'none'; }
+        
+        function openAbsenceInfoModal() { document.getElementById('absence-info-modal-overlay').style.display = 'flex'; }
+        function closeAbsenceInfoModal() { document.getElementById('absence-info-modal-overlay').style.display = 'none'; }
+        
         function openBalanceInfoModal() { document.getElementById('balance-info-modal-overlay').style.display = 'flex'; }
         function closeBalanceInfoModal() { document.getElementById('balance-info-modal-overlay').style.display = 'none'; }
 
