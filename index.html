@@ -487,7 +487,8 @@
                         { id: 1, name: "J.Carlos", color: "#facc15" },
                         { id: 2, name: "Óscar Ibarreta", color: "#ef4444" },
                         { id: 3, name: "Lucas", color: "#d946ef" },
-                        { id: 4, name: "Óscar Ibañez", color: "#3b82f6" }
+                        { id: 4, name: "Óscar Ibañez", color: "#3b82f6" },
+                        { id: 5, name: "Jacobo", color: "#06b6d4" }
                     ];
                     for(let t of tecnicos) { await dbSupabase.from('tecnicos').insert([{ id: t.id, name: t.name, color: t.color }]); }
                 }
@@ -737,7 +738,7 @@
 
         async function actualizarSaldos(techName, extra, ajuste) {
             if (!validarPinSeguridad(`Modificar saldos de ${techName}`)) {
-                renderBalances(); // Revertir visualmente el input si se cancela
+                renderBalances();
                 return;
             }
 
