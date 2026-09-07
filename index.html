@@ -236,7 +236,13 @@
             <div class="card">
                 <h3>
                     <span>🏖️ Control de Saldos (Convenio: 31)</span>
-                    <button class="btn" style="width: 26px; height: 26px; padding:0; border-radius:50%; background:var(--border); color:var(--text-main); font-size:0.75rem; display:flex; align-items:center; justify-content:center;" onclick="openBalanceInfoModal()" title="Ayuda sobre Saldos">i</button>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <select id="tipo-conteo-selector" onchange="cambiarModoConteo(this.value)" class="form-group input" style="padding: 4px 8px; font-size: 0.75rem; width: auto;">
+                            <option value="laborables">Modo: Laborables</option>
+                            <option value="naturales">Modo: Naturales</option>
+                        </select>
+                        <button class="btn" style="width: 26px; height: 26px; padding:0; border-radius:50%; background:var(--border); color:var(--text-main); font-size:0.75rem; display:flex; align-items:center; justify-content:center;" onclick="openBalanceInfoModal()" title="Ayuda sobre Saldos">i</button>
+                    </div>
                 </h3>
                 <div class="vacation-balance-list" id="vacation-balance-list"></div>
             </div>
@@ -389,6 +395,7 @@
         let auditLogs = JSON.parse(localStorage.getItem('hud_audit_logs') || '[]');
 
         let ganttMode = 'annual';
+        let modoConteoGlobal = 'laborables';
         let currentMonthIndex = 0;
         const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         
@@ -438,6 +445,13 @@
             localStorage.setItem('hud_theme', tema);
             playBeep('click');
             showToast(`🎨 Tema HUD cambiado a ${tema.toUpperCase()}`);
+        }
+
+        function cambiarModoConteo(modo) {
+            modoConteoGlobal = modo;
+            playBeep('click');
+            renderBalances();
+            showToast(`🔄 Modo de conteo cambiado a: ${modo.toUpperCase()}`);
         }
 
         function showToast(msg) {
@@ -662,19 +676,26 @@
             });
         }
 
-        function calcularDiasLaborables(startDate, endDate) {
+        function calcularDiasAusencia(startDate, endDate) {
             let s = new Date(startDate), e = new Date(endDate);
-            let diff = 0;
             let cur = new Date(s);
+            let diasTotales = 0;
+
             while(cur <= e) {
                 let dayW = cur.getDay();
                 let dateStr = cur.toISOString().split('T')[0];
-                if(dayW !== 0 && dayW !== 6 && !festivosValència2026.includes(dateStr)) {
-                    diff++;
+                
+                if (modoConteoGlobal === 'naturales') {
+                    diasTotales++;
+                } else {
+                    // Modo laborables: excluye fines de semana (0 y 6) y festivos
+                    if(dayW !== 0 && dayW !== 6 && !festivosValència2026.includes(dateStr)) {
+                        diasTotales++;
+                    }
                 }
                 cur.setDate(cur.getDate() + 1);
             }
-            return diff;
+            return diasTotales;
         }
 
         function calcularResumenArray() {
@@ -684,7 +705,7 @@
                 let diasCal = 0, periodos = [];
                 ausencias.forEach(abs => {
                     if (abs.techName === t.name && abs.type === 'vacation') {
-                        let diff = calcularDiasLaborables(abs.start, abs.end);
+                        let diff = calcularDiasAusencia(abs.start, abs.end);
                         diasCal += diff;
                         periodos.push(`${abs.start.split('-').reverse().join('/')} al ${abs.end.split('-').reverse().join('/')}`);
                     }
@@ -705,7 +726,7 @@
                 let diasCal = 0;
                 ausencias.forEach(abs => {
                     if (abs.techName === t.name && abs.type === 'vacation') {
-                        diasCal += calcularDiasLaborables(abs.start, abs.end);
+                        diasCal += calcularDiasAusencia(abs.start, abs.end);
                     }
                 });
                 let d = vacacionesData[t.name];
@@ -722,12 +743,12 @@
                             <span style="font-weight: 800; font-size: 0.95rem; color: ${restantes < 0 ? '#ef4444' : '#10b981'};" class="font-mono-custom">${restantes} días libres</span>
                         </div>
                         <div style="font-size: 0.75rem; display: flex; justify-content: space-between; color: var(--text-muted); padding: 2px 4px;">
-                            <span>Disfrutados: <b style="color:var(--text-main);">${disfrutados}d</b></span>
+                            <span>Disfrutados (${modoConteoGlobal}): <b style="color:var(--text-main);">${disfrutados}d</b></span>
                             <span>Por Disfrutar: <b style="color:${restantes < 0 ? '#ef4444' : '#10b981'};">${restantes}d</b></span>
                         </div>
                         <div class="vacation-inputs-row">
                             <span>Base: <b>31</b></span>
-                            <span>Lab: <b>${diasCal}</b></span>
+                            <span>Calc: <b>${diasCal}</b></span>
                             <span>Ext: <input type="number" value="${d.extraDisfrutados}" onchange="actualizarSaldos('${t.name}', this.value, null)"></span>
                             <span>Ajust: <input type="number" value="${d.ajusteManual}" onchange="actualizarSaldos('${t.name}', null, this.value)"></span>
                         </div>
@@ -779,7 +800,7 @@
             let res = calcularResumenArray();
             let msg = "🌴 *CENTRO DE VACACIONES - TÉCNICOS* 🌴\n\n";
             res.forEach(i => {
-                msg += `👤 *${i.name}*\n📅 Fechas: ${i.periodos}\n🏖️ Disfrutados: ${i.disfrutados} días\n⏳ Por Disfrutar: ${i.restantes} días\n-----------------------------------\n`;
+                msg += `👤 *${i.name}*\n📅 Fechas: ${i.periodos}\n🏖️ Disfrutados (${modoConteoGlobal}): ${i.disfrutados} días\n⏳ Por Disfrutar: ${i.restantes} días\n-----------------------------------\n`;
             });
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
         }
